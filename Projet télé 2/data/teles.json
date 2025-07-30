@@ -1,0 +1,27 @@
+[
+    {
+      "nom": "TV Belem",
+      "etat": "Fonctionnelle",
+      "x": 150,
+      "y": 620,
+      "salle": "Belem",
+      "reservable": true
+    },
+    {
+      "nom": "TV Réunion Lab 1",
+      "etat": "En panne",
+      "x": 800,
+      "y": 200,
+      "salle": "Réunion Lab 1",
+      "reservable": false
+    },
+    {
+      "nom": "TV Amphithéâtre",
+      "etat": "Réservée",
+      "x": 300,
+      "y": 300,
+      "salle": "Amphithéâtre",
+      "reservable": true
+    }
+  ]
+  
