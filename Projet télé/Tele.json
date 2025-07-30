@@ -1,0 +1,92 @@
+[
+    {
+        "nom": "TV01",
+        "salle": "Fort Net",
+        "x": 600,
+        "y": 203,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV02",
+        "salle": "Ol\u00e9ron",
+        "x": 707,
+        "y": 403,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV03",
+        "salle": "R\u00e9",
+        "x": 593,
+        "y": 446,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV04",
+        "salle": "Madame",
+        "x": 530,
+        "y": 453,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV05",
+        "salle": "Aix",
+        "x": 467,
+        "y": 448,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV06",
+        "salle": "Fort Boyard",
+        "x": 699,
+        "y": 203,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV07",
+        "salle": "Belem",
+        "x": 112,
+        "y": 613,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV08",
+        "salle": "Hermione",
+        "x": 223,
+        "y": 578,
+        "etat": "En panne"
+    },
+    {
+        "nom": "TV09",
+        "salle": "Nao",
+        "x": 223,
+        "y": 637,
+        "etat": "R\u00e9serv\u00e9e"
+    },
+    {
+        "nom": "TV10",
+        "salle": "Shtandart",
+        "x": 321,
+        "y": 579,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV11",
+        "salle": "Victoria",
+        "x": 325,
+        "y": 639,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV12",
+        "salle": "Tour Saint-Nicolas",
+        "x": 298,
+        "y": 351,
+        "etat": "Fonctionnelle"
+    },
+    {
+        "nom": "TV13",
+        "etat": "Fonctionnelle",
+        "x": 716,
+        "y": 352
+    }
+]
