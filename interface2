@@ -1,0 +1,270 @@
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import subprocess
+import os
+import csv
+from PIL import Image, ImageTk
+
+# Variables globales
+dossier_selectionne = ""
+dossier_source = ""
+SCRIPT_DIR = r"L:\Scripts\scripts"
+SCRIPT_DIR = r"L:\Scripts\ressources"
+
+# Mapping des scripts
+definitions_scripts = {
+    "Créer Dossiers apprenants": ("Arbo_Etudiants.BAT", "Création arborescence apprenants"),
+    "Créer Dossiers promotions": ("script_arbo.bat", "Création arborescence promotions"),
+    "Archiver dossiers promotions": ("Archivage_promo.bat", "Archivage par liste de promotions"),
+}
+
+# Fonctions utiles (lancer script, copier, archivage, etc.)
+def lancer_script(nom_script):
+    if not dossier_source:
+        messagebox.showwarning("Dossier requis", "Veuillez d'abord sélectionner un dossier source.")
+        return
+
+    chemin_script = os.path.join(SCRIPT_DIR, nom_script)
+    if not os.path.isfile(chemin_script):
+        messagebox.showerror("Fichier introuvable", f"Le script suivant est introuvable :\n{chemin_script}")
+        return
+
+    try:
+        result = subprocess.run(['cmd', '/c', chemin_script], capture_output=True, text=True)
+        if result.returncode == 0:
+            output = result.stdout.strip() or "(Aucune sortie)"
+            messagebox.showinfo("Succès", f"Script exécuté avec succès :\n{nom_script}\n\n{output}")
+        else:
+            erreur = result.stderr.strip() or result.stdout.strip()
+            messagebox.showerror("Erreur", f"Échec de l'exécution du script :\n{nom_script}\n\n{erreur}")
+    except Exception as e:
+        messagebox.showerror("Exception", f"Erreur lors de l'exécution du script :\n{e}")
+
+def lancer_script_avec_source(nom_script):
+    if not dossier_source:
+        messagebox.showwarning("Dossier requis", "Veuillez d'abord sélectionner un dossier source.")
+        return
+
+    chemin_script = os.path.join(SCRIPT_DIR, nom_script)
+    if not os.path.isfile(chemin_script):
+        messagebox.showerror("Fichier introuvable", f"Le script suivant est introuvable :\n{chemin_script}")
+        return
+
+    try:
+        result = subprocess.run(['cmd', '/c', chemin_script, dossier_source], capture_output=True, text=True)
+        if result.returncode == 0:
+            sortie = result.stdout.strip() or "(Aucune sortie)"
+            messagebox.showinfo("Succès", f"Script terminé :\n{nom_script}\n\n{sortie}")
+        else:
+            erreur = result.stderr.strip() or result.stdout.strip()
+            messagebox.showerror("Erreur", f"Erreur dans {nom_script} :\n\n{erreur}")
+    except Exception as e:
+        messagebox.showerror("Exception", f"Exception levée :\n{e}")
+
+def lancer_archivage(personne, mode):
+    script = os.path.join(SCRIPT_DIR, "archivage.bat")
+    if not os.path.exists(script):
+        messagebox.showerror("Introuvable", "Le script archivage.bat est introuvable.")
+        return
+
+    try:
+        result = subprocess.run(['cmd', '/c', script, personne], capture_output=True, text=True)
+        if result.returncode == 0:
+            messagebox.showinfo("Succès", f"Archivage {mode} exécuté pour : {personne}\n\n{result.stdout.strip()}")
+        else:
+            erreur = result.stderr.strip() or result.stdout.strip()
+            messagebox.showerror("Erreur", f"Échec lors de l’archivage pour {personne} :\n\n{erreur}")
+    except Exception as e:
+        messagebox.showerror("Exception", f"Erreur d'exécution :\n{e}")
+
+def charger_promotions():
+    promotions = set()
+    try:
+        with open(os.path.join(SCRIPT_DIR, "etudiants.csv"), encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter=';')
+            next(reader)
+            for row in reader:
+                if len(row) > 2:
+                    promotions.add(row[2].strip())
+    except Exception as e:
+        messagebox.showerror("Erreur CSV", str(e))
+    return sorted(promotions)
+
+# === Interface principale ===
+fenetre = tk.Tk()
+fenetre.title("Interface de gestion")
+fenetre.geometry("700x700")
+
+style = ttk.Style()
+style.configure("TNotebook.Tab", font=("Arial", 12, "bold"), padding=[10, 5])
+
+notebook = ttk.Notebook(fenetre)
+notebook.pack(fill="both", expand=True)
+# Chargement du logo
+try:
+    logo_image = Image.open("L:\Scripts\interface\logo.png")  # ou le chemin complet si l'image est ailleurs
+    logo_image = logo_image.resize((150, 150))  # Redimensionne si besoin
+    logo_photo = ImageTk.PhotoImage(logo_image)
+    
+    logo_label = tk.Label(fenetre, image=logo_photo)
+    logo_label.image = logo_photo  # Important : garder une référence sinon l'image disparaît
+    logo_label.pack(pady=10, anchor="w")
+except Exception as e:
+    messagebox.showerror("Erreur logo", f"Impossible de charger le logo : {e}")
+
+# Onglet Scripts
+onglet_scripts = tk.Frame(notebook)
+notebook.add(onglet_scripts, text="📁 Création des dossiers")
+
+# Nouveau Frame centré
+center_frame = tk.Frame(onglet_scripts)
+center_frame.pack(expand=True)  # Prend toute la place disponible
+center_frame.place(relx=0.5, rely=0.5, anchor="center")  # Centré
+
+for libelle, (script, _) in definitions_scripts.items():
+    tk.Button(center_frame, text=libelle, width=40, height=2, bg="#1728A9", fg="white",
+              command=lambda s=script: lancer_script(s), font=("Arial", 12, "bold")).pack(pady=4)
+
+# Onglet Copie
+onglet_copie = tk.Frame(notebook)
+notebook.add(onglet_copie, text="📂 Copie")
+
+# Frame centré
+center_frame = tk.Frame(onglet_copie)
+center_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+def choisir_source():
+    global dossier_source
+    chemin = filedialog.askdirectory()
+    if chemin:
+        dossier_source = chemin
+        label_source.config(text=f"Source : {chemin}")
+
+label_source = tk.Label(center_frame, text="Aucune source", fg="blue", font=("Arial", 12, "bold"))
+label_source.pack(pady=5)
+
+btn_source = tk.Button(center_frame, text="📂 Choisir source de fichiers", command=choisir_source,
+                       bg="#FF9800", fg="white", font=("Arial", 12, "bold"))
+btn_source.pack(pady=5)
+
+btn_appr = tk.Button(center_frame, text="Copier fichiers apprenants",
+                     command=lambda: lancer_script_avec_source("Fichiers_etudiants.bat"),
+                     bg="#1728A9", fg="white", font=("Arial", 12, "bold"))
+btn_appr.pack(pady=4)
+
+btn_promo = tk.Button(center_frame, text="Copier fichiers promotions",
+                      command=lambda: lancer_script_avec_source("copie_promotion fichiers.bat"),
+                      bg="#1728A9", fg="white", font=("Arial", 12, "bold"))
+btn_promo.pack(pady=4)
+
+# Onglet Archivage
+onglet_archivage = tk.Frame(notebook)
+notebook.add(onglet_archivage, text="📦 Archivage")
+
+frame_arch = tk.Frame(onglet_archivage)
+frame_arch.pack(pady=10)
+
+mode_var = tk.StringVar(value="promotion")
+promo_var = tk.StringVar()
+nom_var = tk.StringVar()
+promotions = charger_promotions()
+promo_var.set(promotions[0] if promotions else "")
+
+tk.Label(frame_arch, text="Mode :", font=("Arial", 12, "bold")).grid(row=0, column=0)
+tk.OptionMenu(frame_arch, mode_var, "promotion", "etudiant").grid(row=0, column=1)
+
+
+tk.Label(frame_arch, text="Promotion :", font=("Arial", 12, "bold")).grid(row=1, column=0)
+promotions = charger_promotions()
+if not promotions:
+    promotions = ["Aucune"]
+
+promo_var.set(promotions[0])  # définit la valeur par défaut
+promo_menu = tk.OptionMenu(frame_arch, promo_var, promotions[0], *promotions)
+promo_menu.grid(row=1, column=1, padx=5)
+
+tk.Label(frame_arch, text="Nom étudiant :", font=("Arial", 12, "bold")).grid(row=0, column=2)
+tk.Entry(frame_arch, textvariable=nom_var).grid(row=0, column=3)
+
+def maj_champs(*args):
+    if mode_var.get() == "promotion":
+        promo_menu.config(state="normal")
+    else:
+        promo_menu.config(state="disabled")
+
+mode_var.trace_add("write", maj_champs)
+maj_champs()
+
+tk.Button(frame_arch, text="Lancer archivage", command=lambda: lancer_archivage(
+    promo_var.get() if mode_var.get() == "promotion" else nom_var.get(),
+    mode_var.get()
+), bg="#2196F3", fg="white", font=("Arial", 12, "bold")).grid(row=0, column=4, rowspan=2, padx=10)
+
+# Onglet Explorateur
+onglet_explo = tk.Frame(notebook)
+notebook.add(onglet_explo, text="🗂️ Explorateur")
+
+frame_explorer = tk.Frame(onglet_explo)
+frame_explorer.pack()
+
+def rechercher(event):
+    texte = champ_recherche.get().lower()
+    if texte == "🔍 rechercher":
+        return  # Ignore la recherche si c'est le placeholder
+
+    liste_fichiers.delete(0, tk.END)
+    if dossier_selectionne:
+        try:
+            contenu = sorted(os.listdir(dossier_selectionne),
+                             key=lambda x: (not os.path.isdir(os.path.join(dossier_selectionne, x)), x.lower()))
+            for item in contenu:
+                if texte in item.lower():
+                    chemin_item = os.path.join(dossier_selectionne, item)
+                    if os.path.isdir(chemin_item):
+                        liste_fichiers.insert(tk.END, f"📁 {item}")
+                    else:
+                        liste_fichiers.insert(tk.END, f"📄 {item}")
+        except Exception as e:
+            messagebox.showerror("Erreur", str(e))
+
+def on_focus_in(event):
+    if champ_recherche.get() == "🔍 Rechercher":
+        champ_recherche.delete(0, tk.END)
+        champ_recherche.config(fg="black")
+
+def on_focus_out(event):
+    if champ_recherche.get() == "":
+        champ_recherche.insert(0, "🔍 Rechercher")
+        champ_recherche.config(fg="grey")
+
+champ_recherche = tk.Entry(frame_explorer, width=40)
+champ_recherche = tk.Entry(frame_explorer, width=40, fg="grey")
+champ_recherche.insert(0, "🔍 Rechercher")
+champ_recherche.bind("<FocusIn>", on_focus_in)
+champ_recherche.bind("<FocusOut>", on_focus_out)
+champ_recherche.bind("<KeyRelease>", rechercher)
+champ_recherche.pack()
+
+btn_dossier = tk.Button(frame_explorer, text="📁 Choisir un dossier", command=lambda: afficher_contenu(filedialog.askdirectory()), font=("Arial", 12, "bold"))
+btn_dossier.pack()
+
+sb = tk.Scrollbar(frame_explorer)
+liste_fichiers = tk.Listbox(frame_explorer, width=70, height=15, yscrollcommand=sb.set)
+sb.config(command=liste_fichiers.yview)
+liste_fichiers.pack(side="left")
+sb.pack(side="right", fill="y")
+
+image_label = tk.Label(frame_explorer)
+image_label.pack()
+
+# Fonctions explorateur
+def afficher_contenu(chemin):
+    global dossier_selectionne
+    dossier_selectionne = chemin
+    liste_fichiers.delete(0, tk.END)
+    for nom in sorted(os.listdir(chemin)):
+        full_path = os.path.join(chemin, nom)
+        icone = "📁" if os.path.isdir(full_path) else "📄"
+        liste_fichiers.insert(tk.END, f"{icone} {nom}")
+
+fenetre.mainloop()
